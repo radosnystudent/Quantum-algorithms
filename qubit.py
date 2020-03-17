@@ -1,33 +1,81 @@
-import numpy as np
 from gates import gate_list
+from math import sqrt
+from random import randint
 
 class Qubit:
 
     def __init__(self, alfa : complex, beta : complex):
-        self.alfa = alfa
-        self.beta = beta
+        self.__alfa = alfa
+        self.__beta = beta
+        self.__gates = gate_list
 
+    def useGate(self, choice : str, fi = None):
+        if choice.startswith('R'):
+            result = self.__gates[choice](self.__alfa, self.__beta, fi)
+        else:
+            result = self.__gates[choice](self.__alfa, self.__beta)
+        self.__alfa = result.item(0)
+        self.__beta = result.item(1)
+        
+    def measure(self):
+        moduleAlfa = abs(self.__alfa)**2
+        moduleBeta = abs(self.__beta)**2
+        p_alfa = round(moduleAlfa/(moduleAlfa+moduleBeta),2) * 100
+        if randint(0, 100) <= p_alfa:
+            self.__alfa /= abs(self.__alfa)
+        else:
+            self.__beta /= abs(self.__beta)
+
+    def __str__(self):
+        return f'Stan qubita: alfa: {complex(round(self.__alfa.real), round(self.__alfa.imag))} beta: {complex(round(self.__beta.real),round(self.__beta.imag))}'
+
+
+def chooseGate():
+    while True:
+        choice = input('Wybierz bramke wpisujac: X, Y, Z, S, St, T, Tt, H, M, Rx, Ry lub Rz\n> ')
+        if len(choice) == 1:
+            choice = choice.upper()
+        elif len(choice) == 2:
+            choice = choice[0].upper() + choice[1].lower()
+        if choice in [key for key in gate_list.keys()]:
+            return choice
+        else:
+            print('Nie ma takiej bramki.')
+    return None
+
+def main():
+    print('Podaj dwie liczby zespolone:')
+    complexNumbers = list()
+
+    for i in range(2):
+        print(f'{i + 1} liczba:')
+        real = float(input('Real:\n> '))
+        imag = float(input('Imaginary:\n> '))
+        complexNumbers.append(complex(real, imag))
+    
+    Q = Qubit(complexNumbers[0], complexNumbers[1])
+
+    choice = -1
+
+    while True:
+        while choice not in range(4):
+            choice = int(input('1. Wyswietl stan\n2. Pomiar\n3. Bramka\n0. Exit\n> '))
+        if choice == 1:
+            print(Q)
+        elif choice == 2:
+            Q.measure()
+        elif choice == 3:
+            g = chooseGate()
+            if g.startswith('R'):
+                Q.useGate(g, float(input('Podaj wartosc Fi:\n> ')))
+            else:
+                Q.useGate(g)
+        if choice == 0:
+            break
+        choice = -1
 
 if __name__ == '__main__':
-    q = Qubit(complex(5,2), complex(3,0))
-    #print(gate_list[0](complex(1,0), complex(0,0)))
-
-"""
-np.matrix([[complex(0,0), complex(1,0)], [complex(1,0), complex(0,0)]], dtype=complex) # X
-np.matrix([[complex(0,0), complex(0,-1)], [complex(0,1), complex(0,0)]], dtype=complex) # Y
-np.matrix([[complex(1,0), complex(0,0)], [complex(0,0), complex(-1,0)]], dtype=complex) * np.matrix([[self.alfa], [self.beta]]) # Z
-np.matrix([[complex(1,0), complex(0,0)], [complex(0,0), complex(0,1)]], dtype=complex) # S
-np.matrix([[complex(1,0), complex(0,0)], [complex(0,0), complex(0,-1)]], dtype=complex) * np.matrix([[self.alfa], [self.beta]]) # St
-np.matrix([[complex(1,0), complex(0,0)], [complex(0,0), np.exp(complex(0,1)*np.pi/4)]], dtype=complex) # T
-np.matrix([[complex(1,0), complex(0,0)], [complex(0,0), np.exp(complex(0,-1)*np.pi/4)]], dtype=complex) * np.matrix([[self.alfa], [self.beta]]) # Tt
-np.matrix([[complex(0.5,0.5), complex(0.5,-0.5)], [complex(0.5,-0.5), complex(0.5,0.5)]], dtype=complex) * np.matrix([[self.alfa], [self.beta]]) # M
-np.matrix([[complex(1/sqrt(2),0), complex(1/sqrt(2),0)], [complex(1/sqrt(2),0), complex(-1/sqrt(2),0)]], dtype=complex) * np.matrix([[self.alfa], [self.beta]]) # H
-def Rx(fi : any) -> np.matrix:
-    return cos(fi/2) * np.matrix('1 0; 0 1') + complex(0,1) * sin(fi/2) * np.matrix([[complex(0,0), complex(1,0)], [complex(1,0), complex(0,0)]], dtype=complex) 
-
-def Ry(fi : any) -> np.matrix:
-    return cos(fi/2) * np.matrix('1 0; 0 1') + complex(0,1) * sin(fi/2) * np.matrix([[complex(0,0), complex(0,-1)], [complex(0,1), complex(0,0)]], dtype=complex)
-
-def Rz(fi : any) -> np.matrix:
-    return cos(fi/2) * np.matrix('1 0; 0 1') + complex(0,1) * sin(fi/2) * np.matrix([[complex(1,0), complex(0,0)], [complex(0,0), complex(-1,0)]], dtype=complex)
-"""
+    try:
+        main()
+    except ValueError as e:
+        print(e)
