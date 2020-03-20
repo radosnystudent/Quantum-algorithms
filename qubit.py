@@ -23,11 +23,13 @@ class Qubit:
         p_alfa = round(moduleAlfa/(moduleAlfa+moduleBeta),2) * 100
         if randint(0, 100) <= p_alfa:
             self.__alfa /= abs(self.__alfa)
+            self.__beta = 0
         else:
             self.__beta /= abs(self.__beta)
+            self.__alfa = 0
 
     def __str__(self):
-        return f'Stan qubita: alfa: {complex(round(self.__alfa.real), round(self.__alfa.imag))} beta: {complex(round(self.__beta.real),round(self.__beta.imag))}'
+        return f'Aktualny stan qubita\n{complex(round(self.__alfa.real,2), round(self.__alfa.imag,2))}|0> + {complex(round(self.__beta.real,2),round(self.__beta.imag,2))}|1>'
 
 
 def chooseGate():
@@ -65,11 +67,12 @@ def main():
         elif choice == 2:
             Q.measure()
         elif choice == 3:
-            g = chooseGate()
-            if g.startswith('R'):
-                Q.useGate(g, float(input('Podaj wartosc Fi:\n> ')))
-            else:
-                Q.useGate(g)
+            gate = chooseGate()
+            if gate:
+                if gate.startswith('R'):
+                    Q.useGate(gate, float(input('Podaj wartosc kata Fi:\n> ')))
+                else:
+                    Q.useGate(gate)
         if choice == 0:
             break
         choice = -1
